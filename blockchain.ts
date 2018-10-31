@@ -22,16 +22,41 @@ const calculate_hash = (index:number,previous_hash:string,timestamp:number,data:
 
 const genesis_block: Block = new Block(0,'D0A1AE119F1CDCE9066B6FD8932F508338856C50B1F377FEA7467EA18E3E6DB5',null,1540843437,'Canaan');
 
+
+let blockchain: Block[] = [genesis_block];
+
+const get_blockchain = (): Block[] => blockchain;
+
+const get_latest_block = (): Block =>blockchain[blockchain.length - 1];
+
+const calculate_hash_for_block = (block: Block): string =>
+      calculate_hash(block.index,block.previous_hash,block.timestamp,block.data);
+
+
+const add_block = (new_block: Block) => {
+	if (is_valid_new_block(new_block,get_latest_block())){
+		blockchain.push(new_block);
+	}
+};
+
+
+const add_block_to_chain = (new_block: Block) => {
+	if(is_valid_new_block(new_block,get_latest_block())){
+		blockchain.push(new_block);
+		return true;
+	}
+	return false;
+};
+
+
 const generate_next_block = (blockData: string)=>{
-	const previous_block: Block = getLatestBlock();
+	const previous_block: Block = get_latest_block();
 	const next_index: number = previous_block.index + 1;
 	const next_timestamp: number = new Date().getTime() /1000;
 	const next_hash: string = calculate_hash(next_index,previous_block.hash,next_timestamp,blockData);
 	const new_block: Block = new Block(next_index,next_hash,previous_block.hash,next_timestamp,blockData);
 	return new_block;
 }
-//local memory currently, not persistant
-const blockchain: Block[] = [genesis_block];
 
 //validate new block on chain
 const is_valid_new_block = (new_block: Block, previous_block: Block) => {
@@ -80,8 +105,10 @@ const is_valid_chain = (blockchain_to_validate: Block[]): boolean => {
 	return true;
 };
 
-//validate only the longest chain
 
+
+
+//validate only the longest chain
 const replace_chain = (new_blocks: Block[]) => {
 	if(is_valid_chain(new_blocks) && new_blocks.length > get_blockchain().length){
 		console.log('Valid blockchain received. Replacing current blockchain with new blockchain');
@@ -91,3 +118,7 @@ const replace_chain = (new_blocks: Block[]) => {
 		console.log('Invalid blockchain received');
 	}
 };
+
+
+//outflow
+export {Block, get_blockchain, get_latest_block, generate_next_block, is_valid_block_structure, replace_chain, add_block_to_chain};
