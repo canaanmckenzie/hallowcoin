@@ -1,4 +1,5 @@
 import * as CrpytoJS from 'crypto-js';
+import {broadcast_latest} from './p2p';
 
 class Block {
 
@@ -16,6 +17,8 @@ class Block {
 		this.data = data;
 	}
 }
+
+
 //hash with SHA256 
 const calculate_hash = (index:number,previous_hash:string,timestamp:number,data:string): string =>
 	CrpytoJS.SHA256(index + previous_hash + timestamp + data).toString();
