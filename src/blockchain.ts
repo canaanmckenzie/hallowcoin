@@ -23,7 +23,8 @@ class Block {
 const calculate_hash = (index:number,previous_hash:string,timestamp:number,data:string): string =>
 	CrpytoJS.SHA256(index + previous_hash + timestamp + data).toString();
 
-const genesis_block: Block = new Block(0,'D0A1AE119F1CDCE9066B6FD8932F508338856C50B1F377FEA7467EA18E3E6DB5',null,1540843437,'Canaan');
+const genesis_block: Block = new Block(
+	0,'D0A1AE119F1CDCE9066B6FD8932F508338856C50B1F377FEA7467EA18E3E6DB5','',1540843437,'Canaan');
 
 
 let blockchain: Block[] = [genesis_block];
@@ -31,6 +32,8 @@ let blockchain: Block[] = [genesis_block];
 const get_blockchain = (): Block[] => blockchain;
 
 const get_latest_block = (): Block =>blockchain[blockchain.length - 1];
+
+
 
 const calculate_hash_for_block = (block: Block): string =>
       calculate_hash(block.index,block.previous_hash,block.timestamp,block.data);

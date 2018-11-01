@@ -19,7 +19,7 @@ class Message {
 }
 
 const init_p2p_server = (p2pPort: number) => {
-	const server: Server = new Websocket.server({port:p2pPort});
+	const server: Server = new Websocket.Server({port: p2pPort});
 	server.on('connection', (ws: Websocket) => {
 		init_connection(ws);
 	});
@@ -48,7 +48,7 @@ const JSON_to_Object = <T>(data: string): T => {
 	}
 };
 
-const init_message_handler = (ws: WebSocket) => {
+const init_message_handler = (ws: Websocket) => {
 	ws.on('message',(data:string) => {
 		const message: Message = JSON_to_Object<Message>(data);
 		if(message === null){
@@ -58,12 +58,15 @@ const init_message_handler = (ws: WebSocket) => {
 		console.log('Received Message ' + JSON.stringify(message));
 		switch(message.type) {
 			case message_type.QUERY_LATEST:
+                        		console.log("Query latest");
 				write(ws,response_latest_msg());
 				break;
 			case message_type.QUERY_ALL:
+                        		console.log("Query all");
 				write(ws,response_latest_msg());
 				break;
 			case message_type.RESPONSE_BLOCKCHAIN:
+                        		console.log("Response of blockchain");
 				const received_blocks: Block[] = JSON_to_Object<Block[]>(message.data);
 				if (received_blocks === null){
 					console.log('invalid blocks received: ');
@@ -94,11 +97,68 @@ const response_latest_msg = (): Message => ({
 });
 
 
-const init_error_handler = (ws: WebSocket) => {
-	const close_connection = (ws: Websocket) => {
-		console.log('connection failed to peer: ' +ws.url);
-		sockets.splice(sockets.indexOf(myWs), 1);
+const init_error_handler = (ws: Websocket) => {
+
+	const close_connection = (my_ws: Websocket) => {
+		console.log('connection failed to peer: ' +my_ws.url);
+		sockets.splice(sockets.indexOf(my_ws), 1);
 	};
 
-	
-}
+	ws.on('close', () => close_connection(ws));
+	ws.on('error', () => close_connection(ws));
+};
+
+const handle_blockchain_response = (received_blocks: Block[]) => {
+
+	if(received_blocks.length === 0){
+		console.log('received blocks chain size is 0');
+		return;
+	}
+
+	const latest_block_received: Block = received_blocks[received_blocks.length - 1];
+	if(!is_valid_block_structure(latest_block_received)){
+		console.log('block structure is not valid');
+		return;
+	}
+
+	const latest_block_held: Block = get_latest_block();
+
+
+	if(latest_block_received.index > latest_block_held.index){
+
+		console.log('blockchain possibly behind. We got: ' + latest_block_held.index + ' Peer got: ' + latest_block_received.index);
+		if(latest_block_held.hash === latest_block_received.previous_hash){
+			if(add_block_to_chain(latest_block_received)){
+				broadcast(response_latest_msg());
+			}
+		} else if(received_blocks.length === 1){
+			console.log('We have to query the chain from our peer');
+			broadcast(query_all_message());
+		} else {
+			console.log('Received blockchain is longer than current blockchain');
+			replace_chain(received_blocks);
+		} 
+
+	} else {
+
+		console.log('received blockchain is not longer than recieved blockchain. Doing nothing');
+	}
+};
+
+
+const broadcast_latest = (): void => {
+	broadcast(response_latest_msg());
+};
+
+const connect_to_peers = (new_peer: string): void => {
+	const ws: Websocket = new Websocket(new_peer);
+	ws.on('open',() => {
+		init_connection(ws);
+	});
+	ws.on('error',() => {
+		console.log('connection failed');
+	});
+};
+
+export{connect_to_peers,broadcast_latest,init_p2p_server,get_sockets};
+

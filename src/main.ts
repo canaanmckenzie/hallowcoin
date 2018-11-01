@@ -9,15 +9,15 @@ import {connect_to_peers, get_sockets, init_p2p_server} from './p2p';
 
 //dev ports
 //HTTP for node control
-const httpPort : number = parseInt(process.env.HTTP_PORT) || 3001;
+const httpPort: number = parseInt(process.env.HTTP_PORT) || 3001;
 //Websocket for peer to peer communication with other ports
-const p2pPort  : number = parseInt(process.env.P2P_PORT)  || 6001;
+const p2pPort: number = parseInt(process.env.P2P_PORT)  || 6001;
 
 
-const init_http_server = ( my_http_port: number)=> {
+const init_http_server = (my_http_port: number)=> {
+
 	const app = express();
 	app.use(bodyParser.json());
-
 
         app.get('/blocks', (req,res) => {
             res.send(get_blockchain());
