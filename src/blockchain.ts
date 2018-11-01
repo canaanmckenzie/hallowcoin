@@ -29,9 +29,9 @@ const genesis_block: Block = new Block(
 
 let blockchain: Block[] = [genesis_block];
 
-const get_blockchain = (): Block[] => blockchain;
+const get_blockchain = (): Block[] => blockchain; // console.log("blockchainnn"); //blockchain;
 
-const get_latest_block = (): Block =>blockchain[blockchain.length - 1];
+const get_latest_block = (): Block => blockchain[blockchain.length - 1];
 
 
 
@@ -61,6 +61,7 @@ const generate_next_block = (blockData: string)=>{
 	const next_timestamp: number = new Date().getTime() /1000;
 	const next_hash: string = calculate_hash(next_index,previous_block.hash,next_timestamp,blockData);
 	const new_block: Block = new Block(next_index,next_hash,previous_block.hash,next_timestamp,blockData);
+        console.log("generating another block!");
 	return new_block;
 }
 
