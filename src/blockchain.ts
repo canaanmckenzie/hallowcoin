@@ -62,6 +62,8 @@ const generate_next_block = (blockData: string)=>{
 	const next_hash: string = calculate_hash(next_index,previous_block.hash,next_timestamp,blockData);
 	const new_block: Block = new Block(next_index,next_hash,previous_block.hash,next_timestamp,blockData);
         console.log("generating another block!");
+        add_block(new_block);
+        broadcast_latest();
 	return new_block;
 }
 

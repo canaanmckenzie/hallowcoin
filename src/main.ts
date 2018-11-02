@@ -17,24 +17,29 @@ const p2pPort: number = parseInt(process.env.P2P_PORT)  || 6001;
 const init_http_server = (my_http_port: number)=> {
 
 	const app = express();
+
 	app.use(bodyParser.json());
 
-        app.get('/blocks', (req,res) => {
+         app.get('/blocks', (req,res) => {
             res.send(get_blockchain());
-	    });
+            //console.log("made it to app.get in blocks");
+	 });
 
 	 app.post('/mine_block', (req,res) => {
 	    const new_block: Block = generate_next_block(req.body.data);
 	    res.send(new_block);
-	    });
+           // console.log("made it to mining a block");
+	 });
 
          app.get('/peers',(req,res) => {
             res.send(get_sockets().map((s: any) => s._socket.remoteAddress + ':' + s._socket.remotePort));
+            //console.log("made it to get peers");
          });
 
          app.post('/add_peer', (req,res) => {
             connect_to_peers(req.body.peer);
             res.send();
+            //console.log("made it to adding peer")
          });
 
          app.listen(my_http_port, () =>{
